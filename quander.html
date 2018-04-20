@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <script type="text/javascript" src="d3.js"></script>
+  </head>
+
+<body>
+    <svg style="width:2000px;height:500px;">
+    
+    </svg>
+<script>
+//https://medium.com/chrisburgin/javascript-converting-an-object-to-an-array-94b030a1604c
+
+
+//we want data to be in the shape of {instrument:1,month:1,value:.023}
+
+const nqMonthlyURL = "https://www.quandl.com/api/v3/datasets/CHRIS/CME_NQ1.json?api_key=uUfmVoEksfwWxMA4tQcd&transform=rdiff&collapse=monthly&start_date=2015-06-21"
+
+const url = "https://www.quandl.com/api/v3/datasets/CHRIS/CBOE_VX1.json?api_key=uUfmVoEksfwWxMA4tQcd&start_date=2017-01-01&end_date=2018-04-03";
+
+const percentUrl = "https://www.quandl.com/api/v3/datasets/CHRIS/CBOE_VX1.json?api_key=uUfmVoEksfwWxMA4tQcd&transform=rdiff&start_date=2017-04-04";
+
+const parseTime = d3.timeParse("%Y%m%d");
+
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 80, bottom: 30, left: 50},
+    width = svg.attr("width") - margin.left - margin.right,
+    height = svg.attr("height") - margin.top - margin.bottom,
+    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+const x = d3.scaleTime().range([0, width])
+
+
+
+d3.json(nqMonthlyURL).then(data => {
+  
+  const vixArray = Object.values(data.dataset.data).map( index => {
+    return {
+      date: index[0],
+      close: index[4]
+      }
+  })
+
+  x.domain(d3.extent(vixArray, function(d) { return d.date; }));
+
+  console.log(vixArray);
+
+  const maxVix = d3.max(vixArray, d => d.close);
+  const minVix = d3.min(vixArray, d => d.close);
+  const maxminDate = d3.extent(vixArray, d => d.date);
+
+
+  const colorScale = d3.scaleLinear().domain([-.05, .05]).range(["red", "green"]);
+
+  const scaleForColor = d3.scaleLinear().domain([-.25, .25]).range([0, 1]);
+
+
+
+  d3.select("svg")
+          .selectAll("rect")
+          .data(vixArray)
+          .enter()
+          .append("rect")
+            .attr("width", 40	)
+            .attr("height",40)
+            .attr("x", (d,i) => i * 41)
+            .attr("y",30)
+            .style("fill", d => d3.interpolateRdYlGn(d.close * 10))
+});
+
+//.attr("y",	d => 500 - yScale(d.close))
+//   .attr("height", d => yScale(d.close))
+
+
+</script>
+</body>
+</html>

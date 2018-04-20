@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+
+
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.15.3/axios.min.js'></script>
+  <style>
+
+    
+  </style>
+</head>
+
+<body>
+<svg width="960" height="500"></svg>
+
+<script>
+
+const vxFront = 'https://www.quandl.com/api/v3/datasets/CHRIS/CBOE_VX1.json?api_key=uUfmVoEksfwWxMA4tQcd&start_date=2015-04-16';
+//const vx3 = 'https://www.quandl.com/api/v3/datasets/CHRIS/CBOE_VX3.json?api_key=uUfmVoEksfwWxMA4tQcd&start_date=2015-04-16';
+const vx6 = 'https://www.quandl.com/api/v3/datasets/CHRIS/CBOE_VX6.json?api_key=uUfmVoEksfwWxMA4tQcd&start_date=2015-04-16';
+
+const vxFrontPromise  = axios.get(vxFront);
+const vx6Promise  = axios.get(vx6);
+//const vx3Promise  = axios.get(vx3);
+
+//values[0].data.dataset.data[0][0] is 2018-04-17
+
+
+
+
+Promise.all([
+  vxFrontPromise,
+  vx6Promise
+  ]).then(function(values) {
+
+  //extract date and close from VX1
+  const vixArray = Object.values(values[0].data.dataset.data).map( index => {
+      return {
+        date: index[0],
+        VX1close: index[4]
+        }
+    });
+
+  //extract date and close from VX6
+  const vixArray2 = Object.values(values[1].data.dataset.data).map( index => {
+      return {
+        date: index[0],
+        VX6close: index[4]
+      }
+    });
+  
+  //zip both array of objects into 1 array of 2 objects
+  const zipped = vixArray.map((x, i) => [x, vixArray2[i]]);
+
+
+  //combine into array of ojects
+  const VXStructure = zipped.map(x => {
+      return {
+        Date: new Date(x[0].date),
+        VX1: +x[0].VX1close,
+        VX6: +x[1].VX6close
+      }
+    });
+
+    console.log(VXStructure);
+  
+});
+
+</script>
+</body>
